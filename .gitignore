@@ -1,0 +1,9 @@
+/venv
+*/*/pychache
+*/*/migrations
+*/*/static
+*/*/staticfiles
+*/*/templates
+*/*/__pycache__
+*/*/manage.py
+*/*/db.sqlite3
