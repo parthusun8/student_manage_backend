@@ -33,6 +33,7 @@ class Subjects(models.Model):
     semester_no = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(8)])
     type = models.CharField(max_length=100, choices=[('theory', 'theory'), ('lab', 'lab')])
     dept_no = models.ForeignKey(Departments, on_delete=models.CASCADE)
+    credits = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(4)])
     def __str__(self) -> str:
         return f"Semester {self.semester_no} " + self.subject_code +" - " + self.subject_name + " - " + ('T' if self.type=='theory' else 'L')
 

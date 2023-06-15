@@ -21,8 +21,8 @@ class DepartmentViewSet(viewsets.ModelViewSet):
             sections = Sections.objects.filter(dept_no=pk)
             serializer = SectionSerializer(sections, many=True, context={'request': request})
             count_students = Students.objects.filter(section_id__in=sections).count()
-            print(count_students)
-            print(serializer.data)
+            # print(count_students)
+            # print(serializer.data)
             for i in range(len(serializer.data)):
                 serializer.data[i]['count_students'] = Students.objects.filter(section_id=serializer.data[i]["id"]).count()
             return Response(serializer.data)
@@ -79,6 +79,24 @@ class MarksViewSet(viewsets.ModelViewSet):
         print(e)
 
 
+
+def get_grade_from_marks(marks):
+    if marks >= 90:
+        return 'O', 10
+    elif marks >= 80:
+        return 'A+', 9
+    elif marks >= 70:
+        return 'A', 8
+    elif marks >= 60:
+        return 'B', 7
+    elif marks >= 50:
+        return 'C', 6
+    elif marks >= 40:
+        return 'D', 5
+    else:
+        return 'E', 4
+
+
 @require_GET
 def get_student_marks(request, student_id):
     try:
@@ -89,31 +107,41 @@ def get_student_marks(request, student_id):
         data = []
         for i in range(1, student.current_semester + 1):
             subjects = Subjects.objects.filter(dept_no=student.dept_no, semester_no=i)
-            print(subjects)
             marks = Marks.objects.filter(regdno=student_id, subject_id__in=subjects)
             theory = []
             lab = []
+            total = 0
+            total_credits = 0
             for mark in marks:
+                grade, score = get_grade_from_marks(mark.marks)
                 if mark.subject_id.type == 'theory':
                     theory.append({
                         'subject_name': mark.subject_id.subject_name,
                         'marks': mark.marks,
-                        'subject_code': mark.subject_id.subject_code
+                        'subject_code': mark.subject_id.subject_code,
+                        'grade' : grade
                     })
                 else:
                     lab.append({
                         'subject_name': mark.subject_id.subject_name,
                         'marks': mark.marks,
-                        'subject_code': mark.subject_id.subject_code
+                        'subject_code': mark.subject_id.subject_code,
+                        'grade' : grade
                     })
+                total_credits += mark.subject_id.credits
+                total += (score * mark.subject_id.credits)
+                print(total, total_credits)
+                gpa = total/total_credits
             data.append({
                 'semester': i,
                 'subjects': {
                     "theory": theory,
                     "lab": lab
-                }
+                },
+                "sgpa": round(gpa,2),
+                "grade" : get_grade_from_marks(gpa*10)[0]
             })
-        
+        data.reverse()
         return JsonResponse({'Marks': data})
     except Students.DoesNotExist:
         return JsonResponse({'error': 'Student not found'}, status=404)
