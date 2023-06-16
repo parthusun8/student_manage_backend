@@ -23,7 +23,7 @@ class SubjectSerializer(serializers.HyperlinkedModelSerializer):
     dept_no = serializers.PrimaryKeyRelatedField(queryset=Departments.objects.all())
     class Meta:
         model = Subjects
-        fields = ["id", "subject_name", "subject_code", "type", "semester_no", "dept_no"]
+        fields = ["id", "subject_name", "subject_code", 'credits',"type", "semester_no", "dept_no"]
 
 class MarksSerializer(serializers.HyperlinkedModelSerializer):
     regdno = serializers.PrimaryKeyRelatedField(queryset=Students.objects.all())
